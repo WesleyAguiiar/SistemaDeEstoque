@@ -11,14 +11,14 @@ public class SystemController {
     public String menu() {
 
         System.out.println("==== ESTOQUE ====\n");
-        System.out.println("1 - Registrar produto");
-        System.out.println("2 - Listar produtos");
-        System.out.println("3 - Buscar produto");
-        System.out.println("4 - Realizar venda");
-        System.out.println("5 - Repor estoque");
-        System.out.println("6 - Produto com menor estoque");
-        System.out.println("7 - Relátorio geral");
-        System.out.println("8 - Alterar preço de produto");
+        System.out.println("1 - Registrar produto"); // V
+        System.out.println("2 - Listar produtos"); // V
+        System.out.println("3 - Buscar produto"); // V
+        System.out.println("4 - Realizar venda"); // V
+        System.out.println("5 - Repor estoque"); // V
+        System.out.println("6 - Produto com menor estoque"); // V
+        System.out.println("7 - Relátorio geral"); // V
+        System.out.println("8 - Alterar preço de produto"); // V
         System.out.println("0 - Sair");
 
         return sc.nextLine();
