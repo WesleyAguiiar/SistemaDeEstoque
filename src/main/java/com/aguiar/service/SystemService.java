@@ -5,7 +5,6 @@ import com.aguiar.controller.SystemController;
 import com.aguiar.dao.ProductDaoImpl;
 import com.aguiar.dto.ProductRecord;
 import com.aguiar.model.Product;
-import com.aguiar.repository.SystemRepository;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -14,7 +13,6 @@ import java.util.InputMismatchException;
 public class SystemService {
 
     private final SystemController systemController = new SystemController();
-    private final SystemRepository systemRepository = new SystemRepository();
     private final ProductDaoImpl productDaoImpl;
 
     public SystemService(ProductDaoImpl productDao) {
@@ -54,8 +52,6 @@ public class SystemService {
             }
         }
     }
-
-
 
     private void registrarProduto() throws SQLException {
         Product product = validarRegistroProduto();
@@ -147,8 +143,8 @@ public class SystemService {
     private void produtoComMenorEstoque() throws SQLException{
         Product menorEstoque = productDaoImpl.listarTodos().getFirst();
 
-        for (int i = 0; i < systemRepository.getProducts().size() ; i++){
-            Product atual = systemRepository.getProducts().get(i);
+        for (int i = 0; i < productDaoImpl.listarTodos().size() ; i++){
+            Product atual = productDaoImpl.listarTodos().get(i);
             if (atual.getAmount() < menorEstoque.getAmount()){
                 menorEstoque = atual;
             }
@@ -164,7 +160,7 @@ public class SystemService {
         for (int i = 0; i < productDaoImpl.listarTodos().size(); i++){
 
             estoque += productDaoImpl.listarTodos().get(i).getAmount();
-            valorTotal += productDaoImpl.listarTodos().get(i).getAmount() * systemRepository.getProducts().get(i).getPrice();
+            valorTotal += productDaoImpl.listarTodos().get(i).getAmount() * productDaoImpl.listarTodos().get(i).getPrice();
 
         }
         System.out.println("[Info] Quantidade total de produtos cadastrados: " + productDaoImpl.listarTodos().size());
@@ -195,7 +191,7 @@ public class SystemService {
         while (true) {
             try {
                 int option = Integer.parseInt(systemController.menu());
-                if (option < 0 || option > 7) {
+                if (option < 0 || option > 8) {
                     System.out.println("[Erro] Escolha uma opção entre 0 e 7.");
                 } else {
                     return option;
@@ -219,7 +215,7 @@ public class SystemService {
 
     private double validarDouble(){
         while (true){
-            System.out.println("Digite: ");
+            System.out.println("Digite o novo valor: ");
             try {
                 return Double.parseDouble(systemController.saleMenu());
             } catch (InputMismatchException e) {
