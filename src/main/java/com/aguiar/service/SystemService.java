@@ -73,7 +73,7 @@ public class SystemService {
         }
     }
 
-    private Product validarRegistroProduto() {
+    private Product validarRegistroProduto() throws SQLException{
 
         ProductRecord product = systemController.registerMenu();
 
@@ -83,7 +83,7 @@ public class SystemService {
             System.out.println("[Erro] O preço do produto precisa ser maior que 0.");
         } else if (product.name() == null || product.name().length() < 2) {
             System.out.println("[Erro] O nome do produto não pode ser nulo.");
-        } else if (systemRepository.buscarProduto(product.name()) != null){
+        } else if (productDaoImpl.buscarProdutoPeloNome(product.name()) != null){
             System.out.println("[Erro] Produto já cadastrado no sistema.");
         } else {
             return new Product(product.name(), product.price(), product.amount());
