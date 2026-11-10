@@ -1,22 +1,20 @@
 package com.aguiar.service;
 
-import com.aguiar.connection.ConnectionFactory;
 import com.aguiar.controller.SystemController;
-import com.aguiar.dao.ProductDaoImpl;
+import com.aguiar.dao.ProductDao;
 import com.aguiar.dto.ProductRecord;
 import com.aguiar.model.Product;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.InputMismatchException;
 
 public class SystemService {
 
     private final SystemController systemController = new SystemController();
-    private final ProductDaoImpl productDaoImpl;
+    private final ProductDao productDao;
 
-    public SystemService(ProductDaoImpl productDao) {
-        this.productDaoImpl = productDao;
+    public SystemService(ProductDao productDao) {
+        this.productDao = productDao;
     }
 
     public void mainMenu() throws SQLException {
@@ -59,13 +57,8 @@ public class SystemService {
         if (product == null) {
             System.out.println("[Erro] Não foi possível adicionar o produto.");
         } else {
-            //systemRepository.addProduct(product);
-            try (Connection connection = ConnectionFactory.getConnection()){
-                productDaoImpl.salvar(product);
-                System.out.println("[Info] Produto adicionado ao estoque.");
-            } catch (SQLException e){
-                System.out.println("[Erro] " + e.getMessage());
-            }
+            productDao.salvar(product);
+            System.out.println("[Info] Produto adicionado ao estoque.");
         }
     }
 
@@ -79,7 +72,7 @@ public class SystemService {
             System.out.println("[Erro] O preço do produto precisa ser maior que 0.");
         } else if (product.name() == null || product.name().length() < 2) {
             System.out.println("[Erro] O nome do produto não pode ser nulo.");
-        } else if (productDaoImpl.buscarProdutoPeloNome(product.name()) != null){
+        } else if (productDao.buscarProdutoPeloNome(product.name()) != null){
             System.out.println("[Erro] Produto já cadastrado no sistema.");
         } else {
             return new Product(product.name(), product.price(), product.amount());
@@ -90,7 +83,7 @@ public class SystemService {
     private void listarProdutos() throws SQLException{
 
         System.out.println("[Info] Produtos cadastrados: \n");
-        for (Product p : productDaoImpl.listarTodos()) {
+        for (Product p : productDao.listarTodos()) {
             System.out.println(p);
         }
     }
@@ -98,7 +91,7 @@ public class SystemService {
     private void buscarProduto() throws SQLException{
 
         String nome = systemController.menuBusca();
-        Product produto = productDaoImpl.buscarProdutoPeloNome(nome);
+        Product produto = productDao.buscarProdutoPeloNome(nome);
 
         if (!(produto == null)){
             System.out.println(produto);
@@ -111,7 +104,7 @@ public class SystemService {
         String nome = systemController.menuBusca();
         int quantidade = validarInteiro();
 
-        Product product = productDaoImpl.buscarProdutoPeloNome(nome);
+        Product product = productDao.buscarProdutoPeloNome(nome);
 
         if (product == null){
             System.out.println("[Erro] Produto não encontrado!");
@@ -119,7 +112,7 @@ public class SystemService {
             System.out.println("[Erro] Não há produtos suficientes no estoque.");
         } else {
             product.diminuirEstoque(quantidade);
-            productDaoImpl.atualizarProduto(product);
+            productDao.atualizarProduto(product);
             System.out.println("[Info] Restaram " + product.getAmount() + " unidades de " + product.getName() + " no estoque.");
         }
     }
@@ -127,7 +120,7 @@ public class SystemService {
     private void adicionarEstoque() throws SQLException{
         String nome = systemController.menuBusca();
         int quantidade = validarInteiro();
-        Product product = productDaoImpl.buscarProdutoPeloNome(nome);
+        Product product = productDao.buscarProdutoPeloNome(nome);
 
         if (product == null){
             System.out.println("[Erro] Produto não encontrado!");
@@ -135,16 +128,16 @@ public class SystemService {
             System.out.println("[Erro] Digite um número maior que 1.");
         } else {
             product.adicionarEstoque(quantidade);
-            productDaoImpl.atualizarProduto(product);
+            productDao.atualizarProduto(product);
             System.out.println("[Info] Adicionadas " + quantidade + " unidades de " + product.getName() + " ao estoque. Total: " + product.getAmount());
         }
     }
 
     private void produtoComMenorEstoque() throws SQLException{
-        Product menorEstoque = productDaoImpl.listarTodos().getFirst();
+        Product menorEstoque = productDao.listarTodos().getFirst();
 
-        for (int i = 0; i < productDaoImpl.listarTodos().size() ; i++){
-            Product atual = productDaoImpl.listarTodos().get(i);
+        for (int i = 0; i < productDao.listarTodos().size() ; i++){
+            Product atual = productDao.listarTodos().get(i);
             if (atual.getAmount() < menorEstoque.getAmount()){
                 menorEstoque = atual;
             }
@@ -157,13 +150,13 @@ public class SystemService {
         int estoque = 0;
         double valorTotal = 0;
 
-        for (int i = 0; i < productDaoImpl.listarTodos().size(); i++){
+        for (int i = 0; i < productDao.listarTodos().size(); i++){
 
-            estoque += productDaoImpl.listarTodos().get(i).getAmount();
-            valorTotal += productDaoImpl.listarTodos().get(i).getAmount() * productDaoImpl.listarTodos().get(i).getPrice();
+            estoque += productDao.listarTodos().get(i).getAmount();
+            valorTotal += productDao.listarTodos().get(i).getAmount() * productDao.listarTodos().get(i).getPrice();
 
         }
-        System.out.println("[Info] Quantidade total de produtos cadastrados: " + productDaoImpl.listarTodos().size());
+        System.out.println("[Info] Quantidade total de produtos cadastrados: " + productDao.listarTodos().size());
         System.out.println("[Info] Soma de todas unidades no estoque: " + estoque);
         System.out.println("[Info] Valor total do estoque: R$ " + valorTotal);
     }
@@ -171,7 +164,7 @@ public class SystemService {
     private void alterarPreco() throws SQLException{
 
         String nome = systemController.menuBusca();
-        Product product = productDaoImpl.buscarProdutoPeloNome(nome);
+        Product product = productDao.buscarProdutoPeloNome(nome);
 
         Double preco = validarDouble();
 
@@ -181,7 +174,7 @@ public class SystemService {
             System.out.println("[Erro] Insira um valor maior que 0.");
         } else {
             product.setPrice(preco);
-            productDaoImpl.atualizarProduto(product);
+            productDao.atualizarProduto(product);
         }
     }
 
