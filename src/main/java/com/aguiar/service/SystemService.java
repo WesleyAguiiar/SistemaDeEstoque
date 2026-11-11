@@ -96,7 +96,7 @@ public class SystemService {
         if (!(produto == null)){
             System.out.println(produto);
         } else {
-            throw new ProductNotFoundException();
+            System.out.println("[Erro] Produto não encontrado!");
         }
     }
 
