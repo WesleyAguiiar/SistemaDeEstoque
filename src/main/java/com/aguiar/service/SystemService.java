@@ -96,7 +96,7 @@ public class SystemService {
         if (!(produto == null)){
             System.out.println(produto);
         } else {
-            System.out.println("[Erro] Produto não encontrado!");
+            throw new ProductNotFoundException();
         }
     }
 
@@ -110,6 +110,8 @@ public class SystemService {
             System.out.println("[Erro] Produto não encontrado!");
         } else if(product.getAmount() < quantidade){
             System.out.println("[Erro] Não há produtos suficientes no estoque.");
+        } else if (quantidade == 0){
+            System.out.println("[Erro] Digite uma quantidade maior que zero.");
         } else {
             product.diminuirEstoque(quantidade);
             productDao.atualizarProduto(product);
@@ -178,7 +180,6 @@ public class SystemService {
         }
     }
 
-
     // MÉTODOS DE VALIDAÇÃO PARA ENTRADA DE DADOS DO USUÁRIO
     private Integer validarMenu() {
         while (true) {
@@ -189,7 +190,7 @@ public class SystemService {
                 } else {
                     return option;
                 }
-            } catch (RuntimeException e) {
+            } catch (InputMismatchException e) {
                 System.out.println("[Erro] Digite apenas números.");
             }
         }

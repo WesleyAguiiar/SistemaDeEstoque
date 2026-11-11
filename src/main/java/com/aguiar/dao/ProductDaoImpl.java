@@ -34,7 +34,6 @@ public class ProductDaoImpl implements ProductDao{
         } catch (SQLException e){
             System.out.println("[ERRO] " + e.getMessage());
         }
-
         return false;
     }
 
@@ -63,12 +62,10 @@ public class ProductDaoImpl implements ProductDao{
 
                 Product product = new Product(nome, preco, quantidade);
                 products.add(product);
-
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.out.println("[Erro] " + e.getMessage());
         }
-
         return products;
     }
 
