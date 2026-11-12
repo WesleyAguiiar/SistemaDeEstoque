@@ -1,6 +1,7 @@
 package com.aguiar;
 
 import com.aguiar.connection.ConnectionFactory;
+import com.aguiar.controller.SystemController;
 import com.aguiar.dao.ProductDaoImpl;
 import com.aguiar.service.SystemService;
 
@@ -11,7 +12,8 @@ public class Main {
     static void main() {
 
         ProductDaoImpl productDao = new ProductDaoImpl();
-        SystemService systemService = new SystemService(productDao);
+        SystemController systemController = new SystemController();
+        SystemService systemService = new SystemService(productDao, systemController);
 
         try (Connection connection = ConnectionFactory.getConnection()){
             System.out.println("[INFO] Conexão ao banco de dados bem sucedida!");

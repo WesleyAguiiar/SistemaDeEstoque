@@ -4,9 +4,9 @@ import java.util.Objects;
 
 public class Product {
 
-    String name;
-    double price;
-    int amount;
+    private String name;
+    private double price;
+    private int amount;
 
     public Product(String name, double price, int amount) {
         this.name = name;
@@ -30,7 +30,11 @@ public class Product {
     }
 
     public void setPrice(double price) {
-        this.price = price;
+        if (price <= 0){
+            System.out.println("[Erro] O preço não pode ser menor ou igual a zero.");
+        } else {
+            this.price = price;
+        }
     }
 
     public int getAmount() {
@@ -38,11 +42,19 @@ public class Product {
     }
 
     public void adicionarEstoque(int amount){
-        this.amount += amount;
+        if (amount <= 0){
+            System.out.println("[Erro] Digite um número maior que zero.");
+        } else {
+            this.amount += amount;
+        }
     }
 
-    public void diminuirEstoque(int amount){
-        this.amount -= amount;
+    public void diminuirEstoque(int quantidade){
+        if (this.getAmount() < quantidade){
+            System.out.println("[Erro] Não há produtos suficientes no estoque.");
+        } else {
+            this.amount -= quantidade;
+        }
     }
 
     @Override

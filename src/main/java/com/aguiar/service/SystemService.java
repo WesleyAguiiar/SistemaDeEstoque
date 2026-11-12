@@ -6,23 +6,23 @@ import com.aguiar.dto.ProductRecord;
 import com.aguiar.model.Product;
 
 import java.sql.SQLException;
-import java.util.InputMismatchException;
 
 public class SystemService {
 
-    private final SystemController systemController = new SystemController();
+    private final SystemController systemController;
     private final ProductDao productDao;
 
-    public SystemService(ProductDao productDao) {
+    public SystemService(ProductDao productDao, SystemController systemController) {
         this.productDao = productDao;
+        this.systemController = systemController;
     }
 
     public void mainMenu() throws SQLException {
         while (true) {
-            Integer option = validarMenu();
+            Integer option = systemController.menu();
             switch (option) {
                 case 1:
-                    registrarProduto();
+                    registerProduct();
                     break;
                 case 2:
                     listarProdutos();
@@ -51,33 +51,23 @@ public class SystemService {
         }
     }
 
-    private void registrarProduto() throws SQLException {
-        Product product = validarRegistroProduto();
+    private void registerProduct() throws SQLException {
 
-        if (product == null) {
-            System.out.println("[Erro] Não foi possível adicionar o produto.");
-        } else {
-            productDao.salvar(product);
-            System.out.println("[Info] Produto adicionado ao estoque.");
-        }
-    }
+        ProductRecord product = systemController.menuRegistro();
 
-    private Product validarRegistroProduto() throws SQLException{
-
-        ProductRecord product = systemController.registerMenu();
-
-        if (product.amount() < 1) {
-            System.out.println("[Erro] O número de produtos precisa ser maior que 0.");
+        if (product.name() == null || product.name().length() < 2) {
+            System.out.println("[Erro] O nome do produto não pode ficar em branco.");
         } else if (product.price() <= 0) {
             System.out.println("[Erro] O preço do produto precisa ser maior que 0.");
-        } else if (product.name() == null || product.name().length() < 2) {
-            System.out.println("[Erro] O nome do produto não pode ser nulo.");
+        } else if (product.amount() < 1) {
+            System.out.println("[Erro] O número de produtos precisa ser maior que 0.");
         } else if (productDao.buscarProdutoPeloNome(product.name()) != null){
             System.out.println("[Erro] Produto já cadastrado no sistema.");
         } else {
-            return new Product(product.name(), product.price(), product.amount());
+            Product p = new Product(product.name(), product.price(), product.amount());
+            productDao.salvar(p);
+            System.out.println("[Info] Produto adicionado ao estoque.");
         }
-        return null;
     }
 
     private void listarProdutos() throws SQLException{
@@ -102,26 +92,25 @@ public class SystemService {
 
     private void realizarVenda() throws SQLException{
         String nome = systemController.menuBusca();
-        int quantidade = validarInteiro();
+        int quantidade = systemController.validarInteiro();
 
         Product product = productDao.buscarProdutoPeloNome(nome);
 
         if (product == null){
             System.out.println("[Erro] Produto não encontrado!");
-        } else if(product.getAmount() < quantidade){
-            System.out.println("[Erro] Não há produtos suficientes no estoque.");
-        } else if (quantidade == 0){
+        } else if (quantidade <= 0){
             System.out.println("[Erro] Digite uma quantidade maior que zero.");
         } else {
             product.diminuirEstoque(quantidade);
             productDao.atualizarProduto(product);
+            System.out.println("[Info] Venda realizada com sucesso.");
             System.out.println("[Info] Restaram " + product.getAmount() + " unidades de " + product.getName() + " no estoque.");
         }
     }
 
     private void adicionarEstoque() throws SQLException{
         String nome = systemController.menuBusca();
-        int quantidade = validarInteiro();
+        int quantidade = systemController.validarInteiro();
         Product product = productDao.buscarProdutoPeloNome(nome);
 
         if (product == null){
@@ -168,53 +157,13 @@ public class SystemService {
         String nome = systemController.menuBusca();
         Product product = productDao.buscarProdutoPeloNome(nome);
 
-        Double preco = validarDouble();
+        Double preco = systemController.validarDouble();
 
         if (product == null){
             System.out.println("[Erro] Esse produto não foi cadastrado.");
-        } else if (preco <= 0){
-            System.out.println("[Erro] Insira um valor maior que 0.");
         } else {
             product.setPrice(preco);
             productDao.atualizarProduto(product);
-        }
-    }
-
-    // MÉTODOS DE VALIDAÇÃO PARA ENTRADA DE DADOS DO USUÁRIO
-    private Integer validarMenu() {
-        while (true) {
-            try {
-                int option = Integer.parseInt(systemController.menu());
-                if (option < 0 || option > 8) {
-                    System.out.println("[Erro] Escolha uma opção entre 0 e 7.");
-                } else {
-                    return option;
-                }
-            } catch (InputMismatchException e) {
-                System.out.println("[Erro] Digite apenas números.");
-            }
-        }
-    }
-
-    private int validarInteiro(){
-        while (true){
-            System.out.println("Quantidade: ");
-            try {
-                return Integer.parseInt(systemController.saleMenu());
-            } catch (InputMismatchException e) {
-                System.out.println("[Erro] Digite apenas números");
-            }
-        }
-    }
-
-    private double validarDouble(){
-        while (true){
-            System.out.println("Digite o novo valor: ");
-            try {
-                return Double.parseDouble(systemController.saleMenu());
-            } catch (InputMismatchException e) {
-                System.out.println("[Erro] Digite apenas números");
-            }
         }
     }
 }
