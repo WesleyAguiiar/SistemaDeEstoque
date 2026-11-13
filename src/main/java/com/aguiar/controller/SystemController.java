@@ -1,13 +1,116 @@
 package com.aguiar.controller;
 
 import com.aguiar.dto.ProductRecord;
+import com.aguiar.dto.RelatorioRecord;
+import com.aguiar.exception.*;
+import com.aguiar.model.Product;
+import com.aguiar.service.SystemService;
 
+import java.sql.SQLException;
 import java.util.Locale;
 import java.util.Scanner;
 
 public class SystemController {
 
     Scanner sc = new Scanner(System.in).useLocale(Locale.ENGLISH);
+    SystemService systemService;
+
+    public SystemController(SystemService systemService) {
+        this.systemService = systemService;
+    }
+
+    public void mainMenu() throws SQLException {
+        while (true) {
+            Integer option = menu();
+            switch (option) {
+                case 1:
+                    try {
+                        if (systemService.registerProduct(menuRegistro())){
+                            System.out.println("[Info] Produto adicionado ao sistema.");
+                        } else {
+                            System.out.println("[Erro] Não foi possível cadastrar o produto.");
+                        }
+                    } catch (InvalidNameException | InvalidPriceException | InvalidAmountException |
+                             ProductDuplicateException | SQLException e) {
+                        System.out.println(e.getMessage());
+                    }
+                    break;
+                case 2:
+                    try {
+                        System.out.println("[Info] Produtos cadastrados: \n");
+                        for (Product p : systemService.listarProdutos()) {
+                            System.out.println(p);
+                        }
+                    } catch (SQLException e) {
+                        System.out.println(e.getMessage());
+                    }
+                    break;
+                case 3:
+                    try {
+                        Product product = systemService.buscarProduto(menuBusca());
+                        if (product != null){
+                            System.out.println(product);
+                        } else {
+                            System.out.println("[Erro] Produto não encontrado!");
+                        }
+                    } catch (SQLException e){
+                        System.out.println(e.getMessage());
+                    }
+                    break;
+                case 4:
+                    try {
+                        if (systemService.realizarVenda(menuBusca(), validarInteiro())){
+                            System.out.println("[Info] Transação concluida com sucesso!");
+                        }
+                    } catch (ProductNotFoundException | InsufficientStock | InvalidAmountException
+                            | SQLException e){
+                        System.out.println(e.getMessage());
+                    }
+                    break;
+                case 5:
+                    try {
+                        if (systemService.adicionarEstoque(menuBusca(), validarInteiro())){
+                            System.out.println("[Info] A quantidade de produtos no estoque foi atualizada.");
+                        } else {
+                            System.out.println("[Erro] A quantidade inserida precisa ser maior que zero.");
+                        }
+                    } catch (ProductNotFoundException | InvalidAmountException | SQLException e){
+                        System.out.println(e.getMessage());
+                    }
+                    break;
+                case 6:
+                    try {
+                        Product menorEstoque = systemService.produtoComMenorEstoque();
+                        System.out.println("[Info] O produto com menor estoque é " + menorEstoque.getName() +
+                                " com " + menorEstoque.getAmount() + " unidades no estoque");
+                    } catch (ProductNotFoundException | SQLException e){
+                        System.out.println(e.getMessage());
+                    }
+                    break;
+                case 7:
+                    try {
+                        RelatorioRecord relatorioRecord = systemService.relatorioGeral();
+                        System.out.println("[Info] Quantidade total de produtos cadastrados: " + relatorioRecord.produtosCadastrados());
+                        System.out.println("[Info] Soma de todas unidades no estoque: " + relatorioRecord.estoque());
+                        System.out.println("[Info] Valor total do estoque: R$ " + relatorioRecord.valorTotal());
+                        break;
+                    } catch (SQLException e){
+                        System.out.println(e.getMessage());
+                    }
+                case 8:
+                    try {
+                        if (systemService.alterarPreco(menuBusca(), validarDouble())){
+                            System.out.println("[Info] Os dados do produto foram alterados com sucesso!");
+                        }
+                    } catch (ProductNotFoundException | InvalidPriceException | SQLException e){
+                        System.out.println(e.getMessage());
+                    }
+                    break;
+                case 0:
+                    System.exit(0);
+            }
+        }
+    }
 
     public Integer menu() {
 
@@ -79,7 +182,12 @@ public class SystemController {
             System.out.println("Digite o valor: ");
             String valor = sc.nextLine();
             try {
-                return Double.parseDouble(valor.replace(',', '.'));
+                Double resultado = Double.parseDouble(valor.replace(',', '.'));
+                if (resultado.isInfinite() || resultado.isNaN()){
+                    System.out.println("[Erro] O valor inserido é inválido.");
+                } else {
+                    return resultado;
+                }
             } catch (NumberFormatException e) {
                 System.out.println("[Erro] Digite apenas números");
             }

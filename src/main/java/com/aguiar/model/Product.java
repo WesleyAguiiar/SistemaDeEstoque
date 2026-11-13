@@ -1,5 +1,9 @@
 package com.aguiar.model;
 
+import com.aguiar.exception.InsufficientStock;
+import com.aguiar.exception.InvalidAmountException;
+import com.aguiar.exception.InvalidPriceException;
+
 import java.util.Objects;
 
 public class Product {
@@ -9,9 +13,18 @@ public class Product {
     private int amount;
 
     public Product(String name, double price, int amount) {
-        this.name = name;
-        this.price = price;
-        this.amount = amount;
+        if (name == null || name.length() < 2){
+            System.out.println("[Erro] O nome não pode ter menos de 2 caracteres.");
+        }
+        else if (price <= 0){
+            System.out.println("[Erro] O preço não pode ser menor ou igual a 0.");
+        } else if (amount < 0) {
+            System.out.println("[Erro] A quantidade não pode ser menor que 0.");
+        } else {
+            this.name = name;
+            this.price = price;
+            this.amount = amount;
+        }
     }
 
     @Override
@@ -29,11 +42,12 @@ public class Product {
         return price;
     }
 
-    public void setPrice(double price) {
+    public boolean setPrice(double price) {
         if (price <= 0){
-            System.out.println("[Erro] O preço não pode ser menor ou igual a zero.");
+            throw new InvalidPriceException();
         } else {
             this.price = price;
+            return true;
         }
     }
 
@@ -41,19 +55,23 @@ public class Product {
         return amount;
     }
 
-    public void adicionarEstoque(int amount){
-        if (amount <= 0){
-            System.out.println("[Erro] Digite um número maior que zero.");
+    public boolean adicionarEstoque(int quantidade){
+        if (quantidade <= 0){
+            throw new InvalidAmountException();
         } else {
-            this.amount += amount;
+            this.amount += quantidade;
+            return true;
         }
     }
 
-    public void diminuirEstoque(int quantidade){
+    public boolean diminuirEstoque(int quantidade){
         if (this.getAmount() < quantidade){
-            System.out.println("[Erro] Não há produtos suficientes no estoque.");
+            throw new InsufficientStock();
+        } else if (quantidade <= 0) {
+            throw new InvalidAmountException();
         } else {
             this.amount -= quantidade;
+            return true;
         }
     }
 

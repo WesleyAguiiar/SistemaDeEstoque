@@ -11,14 +11,17 @@ import java.sql.SQLException;
 public class Main {
     static void main() {
 
+        // INJEÇÃO DE DEPENDÊNCIAS
         ProductDaoImpl productDao = new ProductDaoImpl();
-        SystemController systemController = new SystemController();
-        SystemService systemService = new SystemService(productDao, systemController);
+
+        SystemService systemService = new SystemService(productDao);
+
+        SystemController systemController = new SystemController(systemService);
 
         try (Connection connection = ConnectionFactory.getConnection()){
             System.out.println("[INFO] Conexão ao banco de dados bem sucedida!");
 
-            systemService.mainMenu();
+            systemController.mainMenu();
 
         } catch (SQLException e) {
             System.out.println("[ERRO] Não foi possível conectar ao banco de dados." + e.getMessage());

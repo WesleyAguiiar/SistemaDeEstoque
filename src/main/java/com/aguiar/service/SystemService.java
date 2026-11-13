@@ -1,169 +1,112 @@
 package com.aguiar.service;
 
-import com.aguiar.controller.SystemController;
 import com.aguiar.dao.ProductDao;
 import com.aguiar.dto.ProductRecord;
+import com.aguiar.dto.RelatorioRecord;
+import com.aguiar.exception.*;
 import com.aguiar.model.Product;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SystemService {
 
-    private final SystemController systemController;
     private final ProductDao productDao;
 
-    public SystemService(ProductDao productDao, SystemController systemController) {
+    public SystemService(ProductDao productDao) {
         this.productDao = productDao;
-        this.systemController = systemController;
     }
 
-    public void mainMenu() throws SQLException {
-        while (true) {
-            Integer option = systemController.menu();
-            switch (option) {
-                case 1:
-                    registerProduct();
-                    break;
-                case 2:
-                    listarProdutos();
-                    break;
-                case 3:
-                    buscarProduto();
-                    break;
-                case 4:
-                    realizarVenda();
-                    break;
-                case 5:
-                    adicionarEstoque();
-                    break;
-                case 6:
-                    produtoComMenorEstoque();
-                    break;
-                case 7:
-                    relatorioGeral();
-                    break;
-                case 8:
-                    alterarPreco();
-                    break;
-                case 0:
-                    System.exit(0);
-            }
-        }
-    }
-
-    private void registerProduct() throws SQLException {
-
-        ProductRecord product = systemController.menuRegistro();
+    public boolean registerProduct(ProductRecord product) throws SQLException {
 
         if (product.name() == null || product.name().length() < 2) {
-            System.out.println("[Erro] O nome do produto não pode ficar em branco.");
+            throw new InvalidNameException();
         } else if (product.price() <= 0) {
-            System.out.println("[Erro] O preço do produto precisa ser maior que 0.");
+            throw new InvalidPriceException();
         } else if (product.amount() < 1) {
-            System.out.println("[Erro] O número de produtos precisa ser maior que 0.");
+            throw new InvalidAmountException();
         } else if (productDao.buscarProdutoPeloNome(product.name()) != null){
-            System.out.println("[Erro] Produto já cadastrado no sistema.");
+            throw new ProductDuplicateException();
         } else {
             Product p = new Product(product.name(), product.price(), product.amount());
-            productDao.salvar(p);
-            System.out.println("[Info] Produto adicionado ao estoque.");
+            return productDao.salvar(p);
         }
     }
 
-    private void listarProdutos() throws SQLException{
-
-        System.out.println("[Info] Produtos cadastrados: \n");
-        for (Product p : productDao.listarTodos()) {
-            System.out.println(p);
-        }
+    public List<Product> listarProdutos() throws SQLException{
+        List<Product> products = new ArrayList<>();
+        products.addAll(productDao.listarTodos());
+        return products;
     }
 
-    private void buscarProduto() throws SQLException{
-
-        String nome = systemController.menuBusca();
+    public Product buscarProduto(String nome) throws SQLException{
         Product produto = productDao.buscarProdutoPeloNome(nome);
-
-        if (!(produto == null)){
-            System.out.println(produto);
-        } else {
-            System.out.println("[Erro] Produto não encontrado!");
-        }
+        return produto;
     }
 
-    private void realizarVenda() throws SQLException{
-        String nome = systemController.menuBusca();
-        int quantidade = systemController.validarInteiro();
+    public boolean realizarVenda(String nome, int quantidade) throws SQLException, InvalidAmountException, InsufficientStock{
 
         Product product = productDao.buscarProdutoPeloNome(nome);
 
         if (product == null){
-            System.out.println("[Erro] Produto não encontrado!");
-        } else if (quantidade <= 0){
-            System.out.println("[Erro] Digite uma quantidade maior que zero.");
-        } else {
-            product.diminuirEstoque(quantidade);
-            productDao.atualizarProduto(product);
-            System.out.println("[Info] Venda realizada com sucesso.");
-            System.out.println("[Info] Restaram " + product.getAmount() + " unidades de " + product.getName() + " no estoque.");
+            throw new ProductNotFoundException();
+        } else if (product.diminuirEstoque(quantidade)){
+            return productDao.atualizarProduto(product);
         }
+        return false;
     }
 
-    private void adicionarEstoque() throws SQLException{
-        String nome = systemController.menuBusca();
-        int quantidade = systemController.validarInteiro();
+    public boolean adicionarEstoque(String nome, int quantidade) throws SQLException, InvalidAmountException{
         Product product = productDao.buscarProdutoPeloNome(nome);
 
         if (product == null){
-            System.out.println("[Erro] Produto não encontrado!");
-        } else if(quantidade < 1){
-            System.out.println("[Erro] Digite um número maior que 1.");
-        } else {
-            product.adicionarEstoque(quantidade);
-            productDao.atualizarProduto(product);
-            System.out.println("[Info] Adicionadas " + quantidade + " unidades de " + product.getName() + " ao estoque. Total: " + product.getAmount());
+            throw new ProductNotFoundException();
+        } else if (product.adicionarEstoque(quantidade)){
+            return productDao.atualizarProduto(product);
         }
+        return false;
     }
 
-    private void produtoComMenorEstoque() throws SQLException{
-        Product menorEstoque = productDao.listarTodos().getFirst();
+    public Product produtoComMenorEstoque() throws SQLException{
+        List<Product> products = new ArrayList<>(productDao.listarTodos());
+        Product menorEstoque = products.getFirst();
 
-        for (int i = 0; i < productDao.listarTodos().size() ; i++){
-            Product atual = productDao.listarTodos().get(i);
-            if (atual.getAmount() < menorEstoque.getAmount()){
-                menorEstoque = atual;
+        for (Product p : products){
+            if (p.getAmount() < menorEstoque.getAmount()){
+                menorEstoque = p;
             }
         }
-        System.out.println("[Info] O produto com menor estoque é " + menorEstoque.getName() +
-                " com " + menorEstoque.getAmount() + " unidades no estoque");
+
+        if (menorEstoque == null){
+            throw new ProductNotFoundException();
+        } else {
+            return menorEstoque;
+        }
     }
 
-    private void relatorioGeral() throws SQLException{
+    public RelatorioRecord relatorioGeral() throws SQLException{
         int estoque = 0;
         double valorTotal = 0;
 
-        for (int i = 0; i < productDao.listarTodos().size(); i++){
+        List<Product> products = new ArrayList<>(productDao.listarTodos());
 
-            estoque += productDao.listarTodos().get(i).getAmount();
-            valorTotal += productDao.listarTodos().get(i).getAmount() * productDao.listarTodos().get(i).getPrice();
-
+        for (Product p : products){
+            estoque += p.getAmount();
+            valorTotal += p.getPrice() * p.getAmount();
         }
-        System.out.println("[Info] Quantidade total de produtos cadastrados: " + productDao.listarTodos().size());
-        System.out.println("[Info] Soma de todas unidades no estoque: " + estoque);
-        System.out.println("[Info] Valor total do estoque: R$ " + valorTotal);
+        return new RelatorioRecord(products.size(), estoque, valorTotal);
     }
 
-    private void alterarPreco() throws SQLException{
+    public boolean alterarPreco(String nome, double preco) throws SQLException, InvalidPriceException{
 
-        String nome = systemController.menuBusca();
         Product product = productDao.buscarProdutoPeloNome(nome);
 
-        Double preco = systemController.validarDouble();
-
         if (product == null){
-            System.out.println("[Erro] Esse produto não foi cadastrado.");
-        } else {
-            product.setPrice(preco);
-            productDao.atualizarProduto(product);
+            throw new ProductNotFoundException();
+        } else if (product.setPrice(preco)){
+            return productDao.atualizarProduto(product);
         }
+        return false;
     }
 }
