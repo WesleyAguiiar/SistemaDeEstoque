@@ -100,7 +100,7 @@ public class ProductDaoImpl implements ProductDao{
         String sql = """
                 UPDATE produtos 
                 SET nome = ?, preco = ?, quantidade = ?
-                WHERE nome = ?
+                WHERE id = ?
                 """;
 
         try (Connection connection = ConnectionFactory.getConnection();
@@ -109,7 +109,7 @@ public class ProductDaoImpl implements ProductDao{
             statement.setString(1, product.getName());
             statement.setDouble(2, product.getPrice());
             statement.setInt(3, product.getAmount());
-            statement.setString(4, product.getName());
+            statement.setInt(4, product.getId());
 
             return statement.executeUpdate() > 0;
         }
@@ -128,7 +128,7 @@ public class ProductDaoImpl implements ProductDao{
 
             statement.setInt(1, id);
 
-            return statement.execute();
+            return statement.executeUpdate() > 0;
         }
     }
 }

@@ -17,10 +17,10 @@ public class Product {
     private double price;
     private int amount;
 
-    public Product(int id, String name, double price, int amount) {
+    public Product(int id, String name, Double price, int amount) {
         if (name == null || name.length() < 2){
             throw new InvalidNameException();
-        } else if (price <= 0){
+        } else if (price <= 0 || price.isInfinite() || price.isNaN()){
             throw new InvalidPriceException();
         } else if (amount < 0) {
             throw new InvalidAmountException();
@@ -72,6 +72,10 @@ public class Product {
 
     public int getAmount() {
         return amount;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public void adicionarEstoque(int quantidade){

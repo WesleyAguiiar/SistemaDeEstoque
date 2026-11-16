@@ -68,11 +68,11 @@ public class SystemService {
 
     public Product produtoComMenorEstoque() throws SQLException{
         List<Product> products = new ArrayList<>(productDao.listarTodos());
-        Product menorEstoque = products.getFirst();
 
-        if (menorEstoque == null){
+        if (products.isEmpty()){
             throw new ProductNotFoundException();
         } else {
+            Product menorEstoque = products.getFirst();
             for (Product p : products){
                 if (p.getAmount() < menorEstoque.getAmount()){
                     menorEstoque = p;
