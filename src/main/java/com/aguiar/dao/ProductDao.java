@@ -14,9 +14,10 @@ public interface ProductDao {
     List<Product> listarTodos() throws SQLException;
 
     // BUSCAR PRODUTO PELO NOME
-    Product buscarProdutoPeloNome(String nome) throws SQLException;
+    Product buscarProdutoPeloId(int id) throws SQLException;
 
     // ATUALIZAR INFORMAÇÕES DO PRODUTO
     boolean atualizarProduto(Product product) throws SQLException;
 
+    boolean deletarProduto(int id) throws SQLException;
 }

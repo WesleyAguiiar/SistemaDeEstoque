@@ -2,24 +2,43 @@ package com.aguiar.model;
 
 import com.aguiar.exception.InsufficientStock;
 import com.aguiar.exception.InvalidAmountException;
+import com.aguiar.exception.InvalidNameException;
 import com.aguiar.exception.InvalidPriceException;
 
 import java.util.Objects;
 
 public class Product {
 
+    // FALTA CORRIGIR O USO DO ID PARA AS OUTRAS CLASSES
+
+
+    private int id;
     private String name;
     private double price;
     private int amount;
 
+    public Product(int id, String name, double price, int amount) {
+        if (name == null || name.length() < 2){
+            throw new InvalidNameException();
+        } else if (price <= 0){
+            throw new InvalidPriceException();
+        } else if (amount < 0) {
+            throw new InvalidAmountException();
+        } else {
+            this.id = id;
+            this.name = name;
+            this.price = price;
+            this.amount = amount;
+        }
+    }
+
     public Product(String name, double price, int amount) {
         if (name == null || name.length() < 2){
-            System.out.println("[Erro] O nome não pode ter menos de 2 caracteres.");
-        }
-        else if (price <= 0){
-            System.out.println("[Erro] O preço não pode ser menor ou igual a 0.");
+            throw new InvalidNameException();
+        } else if (price <= 0){
+            throw new InvalidPriceException();
         } else if (amount < 0) {
-            System.out.println("[Erro] A quantidade não pode ser menor que 0.");
+            throw new InvalidAmountException();
         } else {
             this.name = name;
             this.price = price;
@@ -29,7 +48,8 @@ public class Product {
 
     @Override
     public String toString() {
-        return "Nome: " + name +
+        return "ID: " + id +
+                ", Nome: " + name +
                 ", Preço: R$ " + price +
                 ", Quantidade: " + amount;
     }
@@ -42,12 +62,11 @@ public class Product {
         return price;
     }
 
-    public boolean setPrice(double price) {
+    public void setPrice(double price) {
         if (price <= 0){
             throw new InvalidPriceException();
         } else {
             this.price = price;
-            return true;
         }
     }
 
@@ -55,23 +74,21 @@ public class Product {
         return amount;
     }
 
-    public boolean adicionarEstoque(int quantidade){
+    public void adicionarEstoque(int quantidade){
         if (quantidade <= 0){
             throw new InvalidAmountException();
         } else {
             this.amount += quantidade;
-            return true;
         }
     }
 
-    public boolean diminuirEstoque(int quantidade){
+    public void diminuirEstoque(int quantidade){
         if (this.getAmount() < quantidade){
             throw new InsufficientStock();
         } else if (quantidade <= 0) {
             throw new InvalidAmountException();
         } else {
             this.amount -= quantidade;
-            return true;
         }
     }
 

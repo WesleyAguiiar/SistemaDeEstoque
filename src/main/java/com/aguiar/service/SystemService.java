@@ -26,8 +26,6 @@ public class SystemService {
             throw new InvalidPriceException();
         } else if (product.amount() < 1) {
             throw new InvalidAmountException();
-        } else if (productDao.buscarProdutoPeloNome(product.name()) != null){
-            throw new ProductDuplicateException();
         } else {
             Product p = new Product(product.name(), product.price(), product.amount());
             return productDao.salvar(p);
@@ -40,47 +38,46 @@ public class SystemService {
         return products;
     }
 
-    public Product buscarProduto(String nome) throws SQLException{
-        Product produto = productDao.buscarProdutoPeloNome(nome);
+    public Product buscarProduto(int id) throws SQLException{
+        Product produto = productDao.buscarProdutoPeloId(id);
         return produto;
     }
 
-    public boolean realizarVenda(String nome, int quantidade) throws SQLException, InvalidAmountException, InsufficientStock{
+    public boolean realizarVenda(int id, int quantidade) throws SQLException, InvalidAmountException, InsufficientStock{
 
-        Product product = productDao.buscarProdutoPeloNome(nome);
+        Product product = productDao.buscarProdutoPeloId(id);
 
         if (product == null){
             throw new ProductNotFoundException();
-        } else if (product.diminuirEstoque(quantidade)){
+        } else {
+            product.diminuirEstoque(quantidade);
             return productDao.atualizarProduto(product);
         }
-        return false;
     }
 
-    public boolean adicionarEstoque(String nome, int quantidade) throws SQLException, InvalidAmountException{
-        Product product = productDao.buscarProdutoPeloNome(nome);
+    public boolean adicionarEstoque(int id, int quantidade) throws SQLException, InvalidAmountException{
+        Product product = productDao.buscarProdutoPeloId(id);
 
         if (product == null){
             throw new ProductNotFoundException();
-        } else if (product.adicionarEstoque(quantidade)){
+        } else{
+            product.adicionarEstoque(quantidade);
             return productDao.atualizarProduto(product);
         }
-        return false;
     }
 
     public Product produtoComMenorEstoque() throws SQLException{
         List<Product> products = new ArrayList<>(productDao.listarTodos());
         Product menorEstoque = products.getFirst();
 
-        for (Product p : products){
-            if (p.getAmount() < menorEstoque.getAmount()){
-                menorEstoque = p;
-            }
-        }
-
         if (menorEstoque == null){
             throw new ProductNotFoundException();
         } else {
+            for (Product p : products){
+                if (p.getAmount() < menorEstoque.getAmount()){
+                    menorEstoque = p;
+                }
+            }
             return menorEstoque;
         }
     }
@@ -98,15 +95,18 @@ public class SystemService {
         return new RelatorioRecord(products.size(), estoque, valorTotal);
     }
 
-    public boolean alterarPreco(String nome, double preco) throws SQLException, InvalidPriceException{
-
-        Product product = productDao.buscarProdutoPeloNome(nome);
+    public boolean alterarPreco(int id, double preco) throws SQLException, InvalidPriceException{
+        Product product = productDao.buscarProdutoPeloId(id);
 
         if (product == null){
             throw new ProductNotFoundException();
-        } else if (product.setPrice(preco)){
+        } else {
+            product.setPrice(preco);
             return productDao.atualizarProduto(product);
         }
-        return false;
+    }
+
+    public boolean deletarProduto(int id) throws SQLException{
+            return productDao.deletarProduto(id);
     }
 }

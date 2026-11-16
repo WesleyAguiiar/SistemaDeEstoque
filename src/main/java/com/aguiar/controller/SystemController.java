@@ -12,14 +12,14 @@ import java.util.Scanner;
 
 public class SystemController {
 
-    Scanner sc = new Scanner(System.in).useLocale(Locale.ENGLISH);
+    private final Scanner sc = new Scanner(System.in).useLocale(Locale.ENGLISH);
     SystemService systemService;
 
     public SystemController(SystemService systemService) {
         this.systemService = systemService;
     }
 
-    public void mainMenu() throws SQLException {
+    public void mainMenu(){
         while (true) {
             Integer option = menu();
             switch (option) {
@@ -47,7 +47,7 @@ public class SystemController {
                     break;
                 case 3:
                     try {
-                        Product product = systemService.buscarProduto(menuBusca());
+                        Product product = systemService.buscarProduto(validarBusca());
                         if (product != null){
                             System.out.println(product);
                         } else {
@@ -59,7 +59,7 @@ public class SystemController {
                     break;
                 case 4:
                     try {
-                        if (systemService.realizarVenda(menuBusca(), validarInteiro())){
+                        if (systemService.realizarVenda(validarBusca(), validarInteiro())){
                             System.out.println("[Info] Transação concluida com sucesso!");
                         }
                     } catch (ProductNotFoundException | InsufficientStock | InvalidAmountException
@@ -69,7 +69,7 @@ public class SystemController {
                     break;
                 case 5:
                     try {
-                        if (systemService.adicionarEstoque(menuBusca(), validarInteiro())){
+                        if (systemService.adicionarEstoque(validarBusca(), validarInteiro())){
                             System.out.println("[Info] A quantidade de produtos no estoque foi atualizada.");
                         } else {
                             System.out.println("[Erro] A quantidade inserida precisa ser maior que zero.");
@@ -93,17 +93,29 @@ public class SystemController {
                         System.out.println("[Info] Quantidade total de produtos cadastrados: " + relatorioRecord.produtosCadastrados());
                         System.out.println("[Info] Soma de todas unidades no estoque: " + relatorioRecord.estoque());
                         System.out.println("[Info] Valor total do estoque: R$ " + relatorioRecord.valorTotal());
-                        break;
+
                     } catch (SQLException e){
                         System.out.println(e.getMessage());
                     }
+                    break;
                 case 8:
                     try {
-                        if (systemService.alterarPreco(menuBusca(), validarDouble())){
+                        if (systemService.alterarPreco(validarBusca(), validarDouble())){
                             System.out.println("[Info] Os dados do produto foram alterados com sucesso!");
                         }
                     } catch (ProductNotFoundException | InvalidPriceException | SQLException e){
                         System.out.println(e.getMessage());
+                    }
+                    break;
+                case 9:
+                    try {
+                        if (systemService.deletarProduto(validarBusca())){
+                            System.out.println("[Info] Produto deletado do banco de dados.");
+                        } else {
+                            System.out.println("[Erro] Produto não encontrado!");
+                        }
+                    } catch (SQLException e){
+                        System.out.println("[Erro] " + e.getMessage());
                     }
                     break;
                 case 0:
@@ -123,6 +135,7 @@ public class SystemController {
         System.out.println("6 - Produto com menor estoque");
         System.out.println("7 - Relátorio geral");
         System.out.println("8 - Alterar preço de produto");
+        System.out.println("9 - Deletar produto");
         System.out.println("0 - Sair");
 
         return validarMenu();
@@ -140,13 +153,6 @@ public class SystemController {
         return new ProductRecord(name, price, amount);
     }
 
-    public String menuBusca(){
-        System.out.println("==== BUSCA ====");
-        System.out.println("Nome: ");
-
-        return sc.nextLine();
-    }
-
     // MÉTODOS DE VALIDAÇÃO PARA ENTRADA DE DADOS DO USUÁRIO
 
     public Integer validarMenu() {
@@ -154,8 +160,8 @@ public class SystemController {
             String valor = sc.nextLine();
             try {
                 int option = Integer.parseInt(valor);
-                if (option < 0 || option > 8) {
-                    System.out.println("[Erro] Escolha uma opção entre 0 e 8.");
+                if (option < 0 || option > 9) {
+                    System.out.println("[Erro] Escolha uma opção entre 0 e 9.");
                 } else {
                     return option;
                 }
@@ -168,6 +174,18 @@ public class SystemController {
     public int validarInteiro(){
         while (true){
             System.out.println("Digite a Quantidade: ");
+            String valor = sc.nextLine();
+            try {
+                return Integer.parseInt(valor);
+            } catch (NumberFormatException e) {
+                System.out.println("[Erro] Digite apenas números");
+            }
+        }
+    }
+
+    public int validarBusca(){
+        while (true){
+            System.out.println("Digite o ID do produto: ");
             String valor = sc.nextLine();
             try {
                 return Integer.parseInt(valor);

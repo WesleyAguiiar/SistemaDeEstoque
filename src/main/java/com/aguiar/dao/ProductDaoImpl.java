@@ -21,20 +21,15 @@ public class ProductDaoImpl implements ProductDao{
                 VALUES (?, ?, ?)
                 """;
 
-        try (Connection connection = ConnectionFactory.getConnection()){
-
-            PreparedStatement statement = connection.prepareStatement(sql);
+        try (Connection connection = ConnectionFactory.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)){
 
             statement.setString(1, product.getName());
             statement.setDouble(2, product.getPrice());
             statement.setInt(3, product.getAmount());
 
             return statement.executeUpdate() > 0;
-
-        } catch (SQLException e){
-            System.out.println("[ERRO] " + e.getMessage());
         }
-        return false;
     }
 
     // READ
@@ -49,58 +44,57 @@ public class ProductDaoImpl implements ProductDao{
 
         List<Product> products = new ArrayList<>();
 
-        try (Connection connection = ConnectionFactory.getConnection()){
+        try (Connection connection = ConnectionFactory.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)){
 
-            PreparedStatement statement = connection.prepareStatement(sql);
-            ResultSet result = statement.executeQuery();
+            try (ResultSet result = statement.executeQuery()){
+                while (result.next()){
 
-            while (result.next()){
+                    int id = result.getInt("id");
+                    String nome = result.getString("nome");
+                    double preco = result.getDouble("preco");
+                    int quantidade = result.getInt("quantidade");
 
-                String nome = result.getString("nome");
-                Double preco = result.getDouble("preco");
-                Integer quantidade = result.getInt("quantidade");
-
-                Product product = new Product(nome, preco, quantidade);
-                products.add(product);
+                    Product product = new Product(id, nome, preco, quantidade);
+                    products.add(product);
+                }
             }
-        } catch (SQLException e) {
-            System.out.println("[Erro] " + e.getMessage());
         }
         return products;
     }
 
     // READ (PELO NOME)
     @Override
-    public Product buscarProdutoPeloNome(String nome) throws SQLException {
+    public Product buscarProdutoPeloId(int id) throws SQLException {
 
         String sql = """
                 SELECT id, nome, preco, quantidade
                 FROM produtos
-                WHERE nome = ?
+                WHERE id = ?
                 """;
 
-        try (Connection connection = ConnectionFactory.getConnection()){
+        try (Connection connection = ConnectionFactory.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)){
 
-            PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setString(1, nome);
+            statement.setInt(1, id);
 
-            ResultSet result = statement.executeQuery();
+            try (ResultSet result = statement.executeQuery()){
+                while (result.next()){
+                    Product product = new Product(
+                            result.getInt("id"),
+                            result.getString("nome"),
+                            result.getDouble("preco"),
+                            result.getInt("quantidade"));
 
-            while (result.next()){
-                Product product = new Product(result.getString("nome"),
-                        result.getDouble("preco"),
-                        result.getInt("quantidade"));
-
-                return product;
+                    return product;
+                }
             }
-
-        } catch (SQLException e) {
-            System.out.println("[Erro] " + e.getMessage());
         }
         return null;
     }
 
     // UPDATE
+    @Override
     public boolean atualizarProduto(Product product) throws SQLException {
 
         String sql = """
@@ -109,8 +103,8 @@ public class ProductDaoImpl implements ProductDao{
                 WHERE nome = ?
                 """;
 
-        try (Connection connection = ConnectionFactory.getConnection()){
-            PreparedStatement statement = connection.prepareStatement(sql);
+        try (Connection connection = ConnectionFactory.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)){
 
             statement.setString(1, product.getName());
             statement.setDouble(2, product.getPrice());
@@ -118,6 +112,23 @@ public class ProductDaoImpl implements ProductDao{
             statement.setString(4, product.getName());
 
             return statement.executeUpdate() > 0;
+        }
+    }
+
+    // DELETE
+    @Override
+    public boolean deletarProduto(int id) throws SQLException {
+        String sql = """
+                DELETE FROM produtos
+                WHERE id = ?
+                """;
+
+        try (Connection connection = ConnectionFactory.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)){
+
+            statement.setInt(1, id);
+
+            return statement.execute();
         }
     }
 }
