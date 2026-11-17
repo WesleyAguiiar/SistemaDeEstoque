@@ -30,8 +30,7 @@ public class SystemController {
                         } else {
                             System.out.println("[Erro] Não foi possível cadastrar o produto.");
                         }
-                    } catch (InvalidNameException | InvalidPriceException | InvalidAmountException |
-                             ProductDuplicateException | SQLException e) {
+                    } catch (BusinessException | SQLException e) {
                         System.out.println(e.getMessage());
                     }
                     break;
@@ -62,8 +61,7 @@ public class SystemController {
                         if (systemService.realizarVenda(validarBusca(), validarInteiro())){
                             System.out.println("[Info] Transação concluida com sucesso!");
                         }
-                    } catch (ProductNotFoundException | InsufficientStock | InvalidAmountException
-                            | SQLException e){
+                    } catch (BusinessException | SQLException e){
                         System.out.println(e.getMessage());
                     }
                     break;
@@ -74,7 +72,7 @@ public class SystemController {
                         } else {
                             System.out.println("[Erro] A quantidade inserida precisa ser maior que zero.");
                         }
-                    } catch (ProductNotFoundException | InvalidAmountException | SQLException e){
+                    } catch (BusinessException | SQLException e){
                         System.out.println(e.getMessage());
                     }
                     break;
@@ -83,7 +81,7 @@ public class SystemController {
                         Product menorEstoque = systemService.produtoComMenorEstoque();
                         System.out.println("[Info] O produto com menor estoque é " + menorEstoque.getName() +
                                 " com " + menorEstoque.getAmount() + " unidades no estoque");
-                    } catch (ProductNotFoundException | SQLException e){
+                    } catch (BusinessException | SQLException e){
                         System.out.println(e.getMessage());
                     }
                     break;
@@ -103,7 +101,7 @@ public class SystemController {
                         if (systemService.alterarPreco(validarBusca(), validarDouble())){
                             System.out.println("[Info] Os dados do produto foram alterados com sucesso!");
                         }
-                    } catch (ProductNotFoundException | InvalidPriceException | SQLException e){
+                    } catch (BusinessException | SQLException e){
                         System.out.println(e.getMessage());
                     }
                     break;
