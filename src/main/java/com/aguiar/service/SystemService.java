@@ -24,14 +24,11 @@ public class SystemService {
     }
 
     public List<Product> listarProdutos() throws SQLException{
-        List<Product> products = new ArrayList<>();
-        products.addAll(productDao.listarTodos());
-        return products;
+        return new ArrayList<>(productDao.listarTodos());
     }
 
     public Product buscarProduto(int id) throws SQLException{
-        Product produto = productDao.buscarProdutoPeloId(id);
-        return produto;
+        return productDao.buscarProdutoPeloId(id);
     }
 
     public boolean realizarVenda(int id, int quantidade) throws SQLException, InvalidAmountException, InsufficientStock{

@@ -7,6 +7,9 @@ import com.aguiar.exception.InvalidPriceException;
 
 import java.util.Objects;
 
+import static java.lang.Double.isInfinite;
+import static java.lang.Double.isNaN;
+
 public class Product {
 
     // FALTA CORRIGIR O USO DO ID PARA AS OUTRAS CLASSES
@@ -17,7 +20,7 @@ public class Product {
     private int amount;
 
     public Product(int id, String name, Double price, int amount) {
-        if (name == null || name.trim().isBlank()){
+        if (name == null || name.isBlank()){
             throw new InvalidNameException();
         } else if (validarPreco(price)){
             throw new InvalidPriceException();
@@ -25,7 +28,7 @@ public class Product {
             throw new InvalidAmountException();
         } else {
             this.id = id;
-            this.name = name;
+            this.name = name.trim();
             this.price = price;
             this.amount = amount;
         }
@@ -95,8 +98,8 @@ public class Product {
         }
     }
 
-    boolean validarPreco(Double preco){
-        return !preco.isInfinite() || !preco.isNaN() || preco <= 0;
+    boolean validarPreco(double preco){
+        return isInfinite(preco) || isNaN(preco) || preco <= 0;
     }
 
     @Override

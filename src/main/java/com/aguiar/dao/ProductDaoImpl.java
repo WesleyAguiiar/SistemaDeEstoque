@@ -63,7 +63,7 @@ public class ProductDaoImpl implements ProductDao{
         return products;
     }
 
-    // READ (PELO NOME)
+    // READ (PELO ID)
     @Override
     public Product buscarProdutoPeloId(int id) throws SQLException {
 
@@ -79,14 +79,12 @@ public class ProductDaoImpl implements ProductDao{
             statement.setInt(1, id);
 
             try (ResultSet result = statement.executeQuery()){
-                while (result.next()){
-                    Product product = new Product(
+                if (result.next()){
+                    return new Product(
                             result.getInt("id"),
                             result.getString("nome"),
                             result.getDouble("preco"),
                             result.getInt("quantidade"));
-
-                    return product;
                 }
             }
         }
