@@ -19,17 +19,8 @@ public class SystemService {
     }
 
     public boolean registerProduct(ProductRecord product) throws SQLException {
-
-        if (product.name() == null || product.name().length() < 2) {
-            throw new InvalidNameException();
-        } else if (product.price() <= 0) {
-            throw new InvalidPriceException();
-        } else if (product.amount() < 1) {
-            throw new InvalidAmountException();
-        } else {
-            Product p = new Product(product.name(), product.price(), product.amount());
-            return productDao.salvar(p);
-        }
+        Product p = new Product(product.name(), product.price(), product.amount());
+        return productDao.salvar(p);
     }
 
     public List<Product> listarProdutos() throws SQLException{

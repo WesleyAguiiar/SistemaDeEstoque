@@ -13,7 +13,7 @@ import java.util.Scanner;
 public class SystemController {
 
     private final Scanner sc = new Scanner(System.in).useLocale(Locale.ENGLISH);
-    SystemService systemService;
+    private final SystemService systemService;
 
     public SystemController(SystemService systemService) {
         this.systemService = systemService;

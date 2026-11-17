@@ -11,16 +11,15 @@ public class Product {
 
     // FALTA CORRIGIR O USO DO ID PARA AS OUTRAS CLASSES
 
-
     private int id;
     private String name;
     private double price;
     private int amount;
 
     public Product(int id, String name, Double price, int amount) {
-        if (name == null || name.length() < 2){
+        if (name == null || name.trim().isBlank()){
             throw new InvalidNameException();
-        } else if (price <= 0 || price.isInfinite() || price.isNaN()){
+        } else if (validarPreco(price)){
             throw new InvalidPriceException();
         } else if (amount < 0) {
             throw new InvalidAmountException();
@@ -33,9 +32,9 @@ public class Product {
     }
 
     public Product(String name, double price, int amount) {
-        if (name == null || name.length() < 2){
+        if (name == null || name.trim().isBlank()){
             throw new InvalidNameException();
-        } else if (price <= 0){
+        } else if (validarPreco(price)){
             throw new InvalidPriceException();
         } else if (amount < 0) {
             throw new InvalidAmountException();
@@ -63,7 +62,7 @@ public class Product {
     }
 
     public void setPrice(double price) {
-        if (price <= 0){
+        if (validarPreco(price)){
             throw new InvalidPriceException();
         } else {
             this.price = price;
@@ -94,6 +93,10 @@ public class Product {
         } else {
             this.amount -= quantidade;
         }
+    }
+
+    boolean validarPreco(Double preco){
+        return !preco.isInfinite() || !preco.isNaN() || preco <= 0;
     }
 
     @Override
